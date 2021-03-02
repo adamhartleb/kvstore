@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::{collections::HashMap};
 use std::env::args;
 use std::fs::write; 
 
@@ -7,10 +7,11 @@ fn main() {
     let key = arguments.next().expect("No key was provided.");
     let value = arguments.next().unwrap();
     println!("The key is {} and the value is {}", key, value);
-    let contents = format!("{}\t{}\n", key, value);
-    write("kv.db", contents).unwrap();
 
-    let database = Database::new().expect("Database::new() crashed");
+    let mut database = Database::new().expect("Database::new() crashed");
+
+    database.insert(key, value);
+    database.save().expect("Cannot write to disk");
 }
 
 struct Database {
@@ -37,5 +38,20 @@ impl Database {
         Ok(Database {
             map,
         })
+    }
+    fn insert(&mut self, key: String, value: String) {
+        self.map.insert(key, value);
+    }
+    fn save(&self) -> Result<(), std::io::Error> {
+
+        let mut content = String::new();
+
+        for (key, val) in self.map.iter() {
+            let s = format!("{}\t{}\n", key, val);
+            println!("{} {}", key, val);
+            content.push_str(&s);
+        }
+
+        write("kv.db", content)
     }
 }
