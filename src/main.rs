@@ -10,8 +10,7 @@ fn main() {
 
     let mut database = Database::new().expect("Database::new() crashed");
 
-    database.insert(key, value);
-    database.save().expect("Cannot write to disk");
+    database.insert(key.to_lowercase(), value);
 }
 
 struct Database {
@@ -20,12 +19,6 @@ struct Database {
 
 impl Database {
     fn new() -> Result<Database, std::io::Error> {
-        // let contents = match std::fs::read_to_string("kv.db") {
-        //     Ok(c) => c,
-        //     Err(error) => {
-        //         return Err(error);
-        //     }
-        // };
         let mut map = HashMap::new();
         let contents = std::fs::read_to_string("kv.db")?;
         for line in contents.lines() {
@@ -53,5 +46,11 @@ impl Database {
         }
 
         write("kv.db", content)
+    }
+}
+
+impl Drop for Database {
+    fn drop(&mut self) {
+        self.save().expect("Cannot write to disk");
     }
 }
